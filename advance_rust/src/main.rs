@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use rayon::vec;
 
+mod most_common_word;
 mod generics;
 mod multiple_work;
 mod mutex;
@@ -12,6 +13,7 @@ fn main() {
     mutex::mutex();
     refcell::refcell();
     multiple_work::multiple();
+    most_common_word::most_frequent("hello ji kaise ho ji");
     // transform("sdsdfa");
     // let input = "  42  ";
     // let output = transform(input);

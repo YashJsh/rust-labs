@@ -3,7 +3,7 @@ use actix_web::{App, Error, HttpRequest, HttpResponse, HttpServer, Responder, ge
 use actix_web_actors::ws;
 use uuid::Uuid;
 
-use crate::lobby::{ClientMessage, Connect, Lobby, WSMessage};
+use crate::{lobby::{Lobby, WSMessage}, protocol::{ChatCommand, Connect}};
 
 mod protocol;
 mod lobby;
@@ -38,14 +38,22 @@ impl StreamHandler<Result<ws::Message, ws::ProtocolError>> for WebSocketSession 
     fn handle(&mut self, item: Result<ws::Message, ws::ProtocolError>, ctx: &mut Self::Context) {
         match item {
             Ok(ws::Message::Text(text)) => {
-                let text = text.to_string(); // 🔥 important fix
+                match serde_json::from_str::<ChatCommand>(&text){
+                    Ok(ChatCommand::Join { room, username }) => {
+                        log::info!("{} wants to join room {}", username, room);
+                        // Logic to tell Lobby to move this user to a room
+                    }
+                    Ok(ChatCommand::SendMessage { msg }) => {
+                        // Logic to broadcast to the room
+                    }
+                    Ok(ChatCommand::Leave) => ctx.stop(),
+                    Err(e) => {
+                        log::error!("Invalid JSON received: {}", e);
+                        ctx.text("Error: Invalid message format");
+                    }
+                }
 
                 log::info!("Worker {} received: {}", self.id, text);
-
-                self.lobby_address.do_send(ClientMessage {
-                    from: self.id,
-                    text: text.clone(),
-                });
             }
             Ok(ws::Message::Close(reason)) => {
                 ctx.close(reason);

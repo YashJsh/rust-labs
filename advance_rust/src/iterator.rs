@@ -25,7 +25,7 @@ impl Iterator for Countdown {
 fn test(){
     let count = Countdown{
         n : 1
-    }
+    };
 }
 
 
